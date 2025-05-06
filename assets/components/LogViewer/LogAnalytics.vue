@@ -11,18 +11,26 @@
           <textarea
             v-model="query"
             class="textarea textarea-primary w-full font-mono text-lg"
-            :class="{ 'textarea-error': error }"
+            :class="{ 'textarea-error!': error }"
+            :disabled="state === 'downloading'"
           ></textarea>
-          <div class="label max-h-48 overflow-y-auto pr-2">
-            <span class="label-text-alt text-error" v-if="error">{{ error }}</span>
-            <span class="label-text-alt" v-else>
-              Total {{ results.numRows }} records
-              <template v-if="results.numRows > pageLimit"> . Showing first {{ page.numRows }}. </template>
+          <div class="mt-2">
+            <span class="text-error" v-if="error">{{ error }}</span>
+            <span v-else-if="state === 'initializing'">{{ $t("analytics.creating_table") }}</span>
+            <span v-else-if="state === 'downloading'">{{
+              $t("analytics.downloading", { size: formatBytes(bytes, { decimals: 1 }) })
+            }}</span>
+            <span v-else-if="evaluating">{{ $t("analytics.evaluating_query") }}</span>
+            <span v-else>
+              {{ $t("analytics.total_records", { count: results.numRows.toLocaleString() }) }}
+              <template v-if="results.numRows > pageLimit">{{
+                $t("analytics.showing_first", { count: page.numRows.toLocaleString() })
+              }}</template>
             </span>
           </div>
         </label>
       </section>
-      <SQLTable :table="page" :loading="evaluating || !isReady" />
+      <SQLTable :table="page" :loading="evaluating || state !== 'ready'" />
     </div>
   </aside>
 </template>
@@ -30,12 +38,15 @@
 <script setup lang="ts">
 import { Container } from "@/models/Container";
 import { type Table } from "@apache-arrow/esnext-esm";
+
 const { container } = defineProps<{ container: Container }>();
 const query = ref("SELECT * FROM logs LIMIT 100");
 const error = ref<string | null>(null);
 const debouncedQuery = debouncedRef(query, 500);
 const evaluating = ref(false);
 const pageLimit = 1000;
+const state = ref<"downloading" | "ready" | "initializing">("downloading");
+const bytes = ref(0);
 
 const url = withBase(
   `/api/hosts/${container.host}/containers/${container.id}/logs?stdout=1&stderr=1&everything&jsonOnly`,
@@ -51,27 +62,49 @@ if (!response.ok) {
 const { db, conn } = await useDuckDB();
 const empty = await conn.query<Record<string, any>>(`SELECT 1 LIMIT 0`);
 
-const { isReady } = useAsyncState(
-  async () => {
-    await db.registerFileBuffer("logs.json", new Uint8Array(await response.arrayBuffer()));
+onMounted(async () => {
+  try {
+    state.value = "downloading";
+
+    const reader = response.body?.getReader();
+    if (!reader) throw new Error("No reader available from stream");
+
+    const chunks: Uint8Array[] = [];
+    bytes.value = 0;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      bytes.value += value.length;
+    }
+
+    const arrayBuffer = new Uint8Array(bytes.value);
+    let position = 0;
+    for (const chunk of chunks) {
+      arrayBuffer.set(chunk, position);
+      position += chunk.length;
+    }
+
+    await db.registerFileBuffer("logs.json", arrayBuffer);
+
+    state.value = "initializing";
     await conn.query(
       `CREATE TABLE logs AS SELECT unnest(m) FROM read_json('logs.json', ignore_errors = true, format = 'newline_delimited')`,
     );
-  },
-  undefined,
-  {
-    onError: (e) => {
-      console.error(e);
-      if (e instanceof Error) {
-        error.value = e.message;
-      }
-    },
-  },
-);
+
+    state.value = "ready";
+  } catch (e) {
+    console.error(e);
+    if (e instanceof Error) {
+      error.value = e.message;
+    }
+  }
+});
 
 const results = computedAsync(
   async () => {
-    if (isReady.value) {
+    if (state.value === "ready") {
       return await conn.query<Record<string, any>>(debouncedQuery.value);
     } else {
       return empty;
@@ -89,7 +122,10 @@ const results = computedAsync(
   },
 );
 
-whenever(evaluating, () => (error.value = null));
+whenever(evaluating, () => {
+  error.value = null;
+  state.value = "ready";
+});
 const page = computed(() =>
   results.value.numRows > pageLimit ? results.value.slice(0, pageLimit) : results.value,
 ) as unknown as ComputedRef<Table<Record<string, any>>>;

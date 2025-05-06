@@ -1,6 +1,7 @@
 package web
 
 import (
+	"compress/gzip"
 	"context"
 	"errors"
 	"regexp"
@@ -112,6 +113,12 @@ func (h *handler) fetchLogsBetweenDates(w http.ResponseWriter, r *http.Request) 
 	}
 
 	encoder := json.NewEncoder(w)
+	if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+		w.Header().Set("Content-Encoding", "gzip")
+		writer := gzip.NewWriter(w)
+		defer writer.Close()
+		encoder = json.NewEncoder(writer)
+	}
 
 	for {
 		if buffer.Len() > minimum {
@@ -151,6 +158,7 @@ func (h *handler) fetchLogsBetweenDates(w http.ResponseWriter, r *http.Request) 
 					break
 				}
 
+				support_web.EscapeHTMLValues(event) // only escape when not exporting
 				buffer.Push(event)
 			}
 		}
@@ -238,12 +246,13 @@ func (h *handler) streamLogsForContainers(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	sseWriter, err := support_web.NewSSEWriter(r.Context(), w)
+	sseWriter, err := support_web.NewSSEWriter(r.Context(), w, r)
 	if err != nil {
 		log.Error().Err(err).Msg("error creating sse writer")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	defer sseWriter.Close()
 
 	userLabels := h.config.Labels
 	if h.config.Authorization.Provider != NONE {
@@ -383,6 +392,8 @@ loop:
 			if _, ok := levels[logEvent.Level]; !ok {
 				continue
 			}
+
+			support_web.EscapeHTMLValues(logEvent)
 			sseWriter.Message(logEvent)
 		case c := <-newContainers:
 			if _, err := h.hostService.FindContainer(c.Host, c.ID, userLabels); err == nil {
@@ -397,6 +408,9 @@ loop:
 			}
 
 		case backfillEvents := <-backfill:
+			for _, event := range backfillEvents {
+				support_web.EscapeHTMLValues(event)
+			}
 			if err := sseWriter.Event("logs-backfill", backfillEvents); err != nil {
 				log.Error().Err(err).Msg("error encoding container event")
 			}

@@ -7,7 +7,9 @@
     </div>
     <span class="sr-only">Loading...</span>
   </ul>
-  <div v-else-if="noLogs && !waitingForMoreLog" class="p-4">Container has no logs yet</div>
+  <div v-else-if="noLogs && !waitingForMoreLog" class="p-4">
+    {{ $t("label.no-logs") }}
+  </div>
   <slot :messages="messages" v-else></slot>
   <IndeterminateBar :color />
 </template>
@@ -45,11 +47,25 @@ const fetchMore = async () => {
   }
 };
 
-const shuffle = (items: any[]) => {
-  return items.sort(() => Math.random() - 0.5);
-};
-
-const sizes = computedWithControl(eventSourceURL, () =>
-  shuffle(["w-3/5", "w-2/3", "w-9/12", "w-1/2", "w-1/3", "w-3/4"]),
-);
+const sizes = computedWithControl(eventSourceURL, () => {
+  const sizeOptions = [
+    "w-2/12",
+    "w-3/12",
+    "w-4/12",
+    "w-5/12",
+    "w-6/12",
+    "w-7/12",
+    "w-8/12",
+    "w-9/12",
+    "w-10/12",
+    "w-11/12",
+    "w-full",
+  ];
+  const result = [];
+  const iterations = 18;
+  for (let i = 0; i < iterations; i++) {
+    result.push(sizeOptions[Math.floor(Math.random() * sizeOptions.length)]);
+  }
+  return result;
+});
 </script>

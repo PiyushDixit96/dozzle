@@ -3,10 +3,7 @@ package web
 import (
 	"html/template"
 	"io"
-	"mime"
-	"path/filepath"
 	"sort"
-	"strings"
 
 	"encoding/json"
 
@@ -24,14 +21,7 @@ func (h *handler) index(w http.ResponseWriter, req *http.Request) {
 	_, err := h.content.Open(path)
 	if err == nil && req.URL.Path != "" && req.URL.Path != "/" {
 		w.Header().Set("Cache-Control", "max-age=31536000, immutable")
-		// if brotli is enabled, then just send over the compressed file
-		if file, err := h.content.Open(path + ".br"); strings.Contains(req.Header.Get("Accept-Encoding"), "br") && err == nil {
-			w.Header().Set("Content-Encoding", "br")
-			w.Header().Set("Content-Type", mime.TypeByExtension(filepath.Ext(path)))
-			io.Copy(w, file)
-		} else {
-			fileServer.ServeHTTP(w, req)
-		}
+		fileServer.ServeHTTP(w, req)
 	} else {
 		h.executeTemplate(w, req)
 	}
@@ -113,6 +103,7 @@ func (h *handler) executeTemplate(w http.ResponseWriter, req *http.Request) {
 		log.Fatal().Err(err).Msg("Could not parse index.html")
 	}
 
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	err = tmpl.Execute(w, data)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Could not execute index.html")

@@ -114,3 +114,9 @@ toasts:
   copied:
     title: Copied
     message: Log copied to clipboard
+analytics:
+  creating_table: Создание временной таблицы...
+  downloading: Получение логов контейнеров... ({size})
+  evaluating_query: Выполнение запроса...
+  total_records: Всего {count} записей.
+  showing_first: Показаны первые {count}.

@@ -1,5 +1,5 @@
 <template>
-  <div class="dropdown dropdown-open w-full">
+  <div class="dropdown dropdown-open w-full shadow-md">
     <div class="input input-xl input-primary flex w-full items-center">
       <mdi:magnify class="flex size-8" />
       <input
@@ -13,8 +13,11 @@
         v-model="query"
         :placeholder="$t('placeholder.search-containers')"
       />
-      <form method="dialog">
-        <button class="swap hover:swap-active">
+      <form method="dialog" class="flex">
+        <button v-if="isMobile">
+          <mdi:close />
+        </button>
+        <button v-else class="swap hover:swap-active outline-hidden">
           <mdi:keyboard-esc class="swap-off" />
           <mdi:close class="swap-on" />
         </button>
@@ -30,7 +33,7 @@
           <a
             class="grid auto-cols-max grid-cols-[min-content_auto] gap-2 py-4"
             @click.prevent="selected(result.item)"
-            :class="index === selectedIndex ? 'menu-focus' : ''"
+            :class="{ 'menu-focus': index === selectedIndex }"
           >
             <div :class="{ 'text-primary': result.item.state === 'running' }">
               <template v-if="result.item.type === 'container'">
@@ -214,7 +217,7 @@ function matchedName({ item, matches = [] }: FuseResult<Item>) {
 </script>
 
 <style scoped>
-@import "@/main.css" reference;
+@reference "@/main.css";
 :deep(mark) {
   @apply bg-transparent text-inherit underline underline-offset-2;
 }

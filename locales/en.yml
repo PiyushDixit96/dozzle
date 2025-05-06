@@ -30,6 +30,7 @@ label:
   host-menu: Hosts and Containers
   swarm-menu: Services and Stacks
   group-menu: Custom Groups
+  no-logs: Container has no logs yet
 tooltip:
   search: Search containers (⌘ + k, ⌃k)
   pin-column: Pin as column
@@ -119,3 +120,9 @@ toasts:
   copied:
     title: Copied
     message: Log copied to clipboard
+analytics:
+  creating_table: Creating temporary table...
+  downloading: Fetching container logs... ({size})
+  evaluating_query: Evaluating query...
+  total_records: Total {count} records.
+  showing_first: Showing first {count}.
