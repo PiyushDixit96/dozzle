@@ -119,13 +119,28 @@
       <div class="has-underline">
         <h2>{{ $t("settings.options") }}</h2>
       </div>
+
+      <LabeledInput>
+        <template #label>
+          {{ $t("settings.automatic-redirect") }}
+        </template>
+        <template #input>
+          <DropdownMenu
+            v-model="automaticRedirect"
+            :options="[
+              { label: 'Instant', value: 'instant' },
+              { label: 'Delayed', value: 'delayed' },
+              { label: 'None', value: 'none' },
+            ]"
+          />
+        </template>
+      </LabeledInput>
+
       <Toggle v-model="search">
         {{ $t("settings.search") }} <key-shortcut char="f" class="align-top"></key-shortcut>
       </Toggle>
 
       <Toggle v-model="showAllContainers">{{ $t("settings.show-stopped-containers") }}</Toggle>
-
-      <Toggle v-model="automaticRedirect">{{ $t("settings.automatic-redirect") }}</Toggle>
     </section>
   </PageWithLinks>
 </template>
@@ -166,8 +181,8 @@ const hoursAgo = (hours: number) => {
 const fakeMessages = computedWithControl(
   () => i18n.global.locale.value,
   () => [
-    new SimpleLogEntry(t("settings.log.preview"), "123", 1, hoursAgo(16), "info", undefined, "stdout"),
-    new SimpleLogEntry(t("settings.log.warning"), "123", 2, hoursAgo(12), "warn", undefined, "stdout"),
+    new SimpleLogEntry(t("settings.log.preview"), "123", 1, hoursAgo(16), "info", undefined, "stdout", ""),
+    new SimpleLogEntry(t("settings.log.warning"), "123", 2, hoursAgo(12), "warn", undefined, "stdout", ""),
     new SimpleLogEntry(
       t("settings.log.multi-line-error.start-line"),
       "123",
@@ -176,6 +191,7 @@ const fakeMessages = computedWithControl(
       "error",
       "start",
       "stderr",
+      "",
     ),
     new SimpleLogEntry(
       t("settings.log.multi-line-error.middle-line"),
@@ -185,8 +201,9 @@ const fakeMessages = computedWithControl(
       "error",
       "middle",
       "stderr",
+      "",
     ),
-    new SimpleLogEntry(t("settings.log.multi-line-error.end-line"), "123", 5, new Date(), "error", "end", "stderr"),
+    new SimpleLogEntry(t("settings.log.multi-line-error.end-line"), "123", 5, new Date(), "error", "end", "stderr", ""),
     new ComplexLogEntry(
       {
         message: t("settings.log.complex"),
@@ -200,8 +217,9 @@ const fakeMessages = computedWithControl(
       new Date(),
       "info",
       "stdout",
+      "",
     ),
-    new SimpleLogEntry(t("settings.log.simple"), "123", 7, new Date(), "debug", undefined, "stderr"),
+    new SimpleLogEntry(t("settings.log.simple"), "123", 7, new Date(), "debug", undefined, "stderr", ""),
   ],
 );
 </script>

@@ -124,6 +124,7 @@ func createEvent(message string, streamType StdType) *LogEvent {
 			logEvent.Timestamp = timestamp.UnixMilli()
 			message = strings.TrimSuffix(message[index+1:], "\n")
 			logEvent.Message = message
+			logEvent.RawMessage = message
 			if message == "" {
 				logEvent.Message = "" // empty message so do nothing
 			} else if json.Valid([]byte(message)) {
@@ -144,6 +145,11 @@ func createEvent(message string, streamType StdType) *LogEvent {
 				}
 			} else if data, err := ParseLogFmt(message); err == nil {
 				logEvent.Message = data
+				data, err := json.Marshal(data)
+				if err != nil {
+					log.Error().Err(err).Msg("failed to marshal json")
+				}
+				logEvent.RawMessage = string(data)
 			}
 		}
 	}

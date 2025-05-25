@@ -138,7 +138,7 @@ describe("<ContainerEventSource />", () => {
     const wrapper = createLogEventSource();
     sources[sourceUrl].emitOpen();
     sources[sourceUrl].emitMessage({
-      data: `{"ts":1560336942459, "m":"This is a message.", "id":1}`,
+      data: `{"ts":1560336942459, "m":"This is a message.", "id":1, "rm": "This is a message."}`,
     });
 
     vi.runAllTimers();
@@ -154,26 +154,26 @@ describe("<ContainerEventSource />", () => {
       const wrapper = createLogEventSource();
       sources[sourceUrl].emitOpen();
       sources[sourceUrl].emitMessage({
-        data: `{"ts":1560336942459, "m":"This is a message.", "id":1}`,
+        data: `{"ts":1560336942459, "m":"This is a message.", "id":1, "rm": "This is a message."}`,
       });
 
       vi.runAllTimers();
       await nextTick();
 
-      expect(wrapper.find("ul.events").html()).toMatchSnapshot();
+      expect(wrapper.find("ul[data-logs]").html()).toMatchSnapshot();
     });
 
     test("should render dates with 12 hour style", async () => {
       const wrapper = createLogEventSource({ hourStyle: "12" });
       sources[sourceUrl].emitOpen();
       sources[sourceUrl].emitMessage({
-        data: `{"ts":1560336942459, "m":"foo bar", "id":1}`,
+        data: `{"ts":1560336942459, "m":"foo bar", "id":1, "rm": "foo bar"}`,
       });
 
       vi.runAllTimers();
       await nextTick();
 
-      expect(wrapper.find("ul.events").html()).toMatchSnapshot();
+      expect(wrapper.find("ul[data-logs]").html()).toMatchSnapshot();
     });
 
     test("should render dates with 24 hour style", async () => {
@@ -186,7 +186,7 @@ describe("<ContainerEventSource />", () => {
       vi.runAllTimers();
       await nextTick();
 
-      expect(wrapper.find("ul.events").html()).toMatchSnapshot();
+      expect(wrapper.find("ul[data-logs]").html()).toMatchSnapshot();
     });
   });
 });
