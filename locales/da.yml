@@ -9,6 +9,13 @@ toolbar:
   restart: Genstart
   show-hostname: Vis værtsnavn
   show-container-name: Vis containernavn
+  shell: Shell
+  attach: Tilknyt
+action:
+  copy-log: Kopier log
+  copy-link: Kopier permalink
+  see-in-context: Se i kontekst
+  show-details: Vis detaljer
 label:
   containers: Containere
   container: Ingen containere | 1 container | {count} containere
@@ -32,6 +39,7 @@ label:
   group-menu: Brugerdefinerede Grupper
   no-logs: Container har ingen logs endnu
   show-all-containers: Vis alle containere
+  collapse-all: Kollaps alle
 tooltip:
   search: Søg containere (⌘ + k, ⌃k)
   pin-column: Fastgør som kolonne
@@ -41,7 +49,7 @@ tooltip:
 error:
   page-not-found: Denne side eksisterer ikke
   invalid-auth: Brugernavn eller kodeord er ikke gyldig
-  logs-skipped: Sprang over {total} indtastninger
+  logs-skipped: Vis {total} skjulte indtastninger
   container-not-found: Container ikke fundet
   events-stream:
     title: Uventet fejl
@@ -74,6 +82,8 @@ placeholder:
   search-containers: Søg containere (⌘ + k, ⌃k)
   search: Søg
 settings:
+  help-support: >
+    Støt venligst Dozzle ved at donere eller sponsorere os på GitHub. Dine bidrag hjælper os med at forbedre Dozzle for alle. Tak! 🙏🏼
   display: Visning
   locale: Overskriv sprog
   small-scrollbars: Brug mindre scrollbarer
@@ -86,7 +96,7 @@ settings:
   show-stopped-containers: Vis stoppet containere
   about: Omkring
   search: Aktiver søgning med Dozzle ved brug af
-  using-version: Du bruger Dozzle {version}.
+  using-version: Du bruger <a href="https://dozzle.dev/" target="_blank" rel="noreferrer noopener">Dozzle</a> {version}.
   update-available: >-
     Ny version er tilgængelig! Opdater til <a href="{href}" target="_blank" rel="noreferrer noopener">{nextVersion}</a>.
   show-std: Vis stdout og stderr mærker

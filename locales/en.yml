@@ -9,6 +9,13 @@ toolbar:
   restart: Restart
   show-hostname: Show hostname
   show-container-name: Show container name
+  shell: Shell
+  attach: Attach
+action:
+  copy-log: Copy log
+  copy-link: Copy permalink
+  see-in-context: See in context
+  show-details: Show details
 label:
   containers: Containers
   container: No containers | 1 container | {count} containers
@@ -32,6 +39,7 @@ label:
   group-menu: Custom Groups
   no-logs: Container has no logs yet
   show-all-containers: Show all containers
+  collapse-all: Collapse all
 tooltip:
   search: Search containers (⌘ + k, ⌃k)
   pin-column: Pin as column
@@ -41,7 +49,7 @@ tooltip:
 error:
   page-not-found: This page does not exist
   invalid-auth: Username or password are not valid
-  logs-skipped: Skipped {total} entries
+  logs-skipped: Show {total} hidden entries
   container-not-found: Container not found
   events-stream:
     title: Unexpected Error
@@ -78,6 +86,9 @@ placeholder:
   search-containers: Search containers (⌘ + k, ⌃k)
   search: Search
 settings:
+  help-support: >
+    Please support Dozzle by donating or sponsoring us on GitHub. Your contributions help us improve Dozzle for
+    everyone. Thank you! 🙏🏼
   display: Display
   locale: Override language
   small-scrollbars: Use smaller scrollbars
@@ -90,7 +101,7 @@ settings:
   show-stopped-containers: Show stopped containers
   about: About
   search: Enable searching with Dozzle using
-  using-version: You are using Dozzle {version}.
+  using-version: You are using <a href="https://dozzle.dev/" target="_blank" rel="noreferrer noopener">Dozzle</a> {version}.
   update-available: >-
     New version is available! Update to <a href="{href}" target="_blank"
     rel="noreferrer noopener">{nextVersion}</a>.
@@ -120,7 +131,7 @@ log_actions:
 toasts:
   copied:
     title: Copied
-    message: Log copied to clipboard
+    message: Copied to clipboard
 analytics:
   creating_table: Creating temporary table...
   downloading: Fetching container logs... ({size})

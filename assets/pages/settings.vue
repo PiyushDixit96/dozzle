@@ -5,12 +5,35 @@
         <h2>{{ $t("settings.about") }}</h2>
       </div>
 
-      <div>
+      <div class="flex flex-row gap-2">
         <span v-html="$t('settings.using-version', { version: config.version })"></span>
-        <div
+        <span
           v-if="hasRelease"
           v-html="$t('settings.update-available', { nextVersion: latestRelease?.name, href: latestRelease?.htmlUrl })"
-        ></div>
+        ></span>
+      </div>
+
+      <div class="mt-4">
+        {{ $t("settings.help-support") }}
+
+        <ul class="mt-6 flex gap-2">
+          <li>
+            <a href="https://github.com/amir20/dozzle" target="_blank" rel="noopener noreferrer" class="btn">
+              <mdi:github /> amir20/dozzle
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://buymeacoffee.com/amirraminfar"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn btn-secondary"
+            >
+              <mdi:beer />
+              Buy me a beer
+            </a>
+          </li>
+        </ul>
       </div>
     </section>
 
@@ -227,14 +250,14 @@ const fakeMessages = computedWithControl(
 @reference "@/main.css";
 
 .has-underline {
-  @apply border-base-content/50 mb-4 border-b py-4;
+  @apply border-base-content/50 mb-4 border-b py-2;
 
   h2 {
-    @apply text-2xl;
+    @apply text-3xl;
   }
 }
 
-:deep(a:not(.menu a)) {
+:deep(a:not(.menu a):not(.btn)) {
   @apply text-primary underline-offset-4 hover:underline;
 }
 </style>

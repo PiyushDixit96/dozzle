@@ -9,6 +9,7 @@ import {
   ContainerEventLogEntry,
   ComplexLogEntry,
   SkippedLogsEntry,
+  LoadMoreLogEntry,
 } from "@/models/LogEntry";
 import { Service, Stack } from "@/models/Stack";
 import { Container, GroupedContainers } from "@/models/Container";
@@ -22,8 +23,7 @@ function parseMessage(data: string): LogEntry<string | JSONObject> {
 
 export function useContainerStream(container: Ref<Container>): LogStreamSource {
   const url = computed(() => `/api/hosts/${container.value.host}/containers/${container.value.id}/logs/stream`);
-  const loadMoreUrl = computed(() => `/api/hosts/${container.value.host}/containers/${container.value.id}/logs`);
-  return useLogStream(url, loadMoreUrl);
+  return useLogStream(url, container);
 }
 
 export function useHostStream(host: Ref<Host>): LogStreamSource {
@@ -53,13 +53,15 @@ export function useServiceStream(service: Ref<Service>): LogStreamSource {
 
 export type LogStreamSource = ReturnType<typeof useLogStream>;
 
-function useLogStream(url: Ref<string>, loadMoreUrl?: Ref<string>) {
+function useLogStream(url: Ref<string>, container?: Ref<Container>) {
   const messages: ShallowRef<LogEntry<string | JSONObject>[]> = shallowRef([]);
   const buffer: ShallowRef<LogEntry<string | JSONObject>[]> = shallowRef([]);
   const opened = ref(false);
   const loading = ref(true);
   const error = ref(false);
   const { paused: scrollingPaused } = useScrollContext();
+  const { streamConfig, hasComplexLogs, levels, loadingMore } = useLoggingContext();
+  let initial = true;
 
   function flushNow() {
     if (messages.value.length + buffer.value.length > config.maxLogs) {
@@ -71,10 +73,9 @@ function useLogStream(url: Ref<string>, loadMoreUrl?: Ref<string>) {
         } else {
           const firstItem = buffer.value.at(0) as LogEntry<string | JSONObject>;
           const lastItem = buffer.value.at(-1) as LogEntry<string | JSONObject>;
-
           messages.value = [
             ...messages.value,
-            new SkippedLogsEntry(new Date(), buffer.value.length, firstItem, lastItem),
+            new SkippedLogsEntry(new Date(), buffer.value.length, firstItem, lastItem, loadSkippedLogs),
           ];
         }
         buffer.value = [];
@@ -87,9 +88,15 @@ function useLogStream(url: Ref<string>, loadMoreUrl?: Ref<string>) {
         buffer.value = [];
       }
     } else {
-      if (messages.value.length == 0) {
+      if (initial) {
         // sort the buffer the very first time because of multiple logs in parallel
         buffer.value.sort((a, b) => a.date.getTime() - b.date.getTime());
+
+        if (container) {
+          const loadMoreItem = new LoadMoreLogEntry(new Date(), loadOlderLogs);
+          messages.value = [loadMoreItem];
+        }
+        initial = false;
       }
       messages.value = [...messages.value, ...buffer.value];
       buffer.value = [];
@@ -111,8 +118,6 @@ function useLogStream(url: Ref<string>, loadMoreUrl?: Ref<string>) {
     buffer.value = [];
   }
 
-  const { streamConfig, hasComplexLogs, levels } = useLoggingContext();
-
   const params = computed(() => {
     const params = new URLSearchParams();
     if (streamConfig.value.stdout) params.append("stdout", "1");
@@ -132,6 +137,7 @@ function useLogStream(url: Ref<string>, loadMoreUrl?: Ref<string>) {
     opened.value = false;
     loading.value = true;
     error.value = false;
+    initial = true;
     es = new EventSource(urlWithParams.value);
     es.addEventListener("container-event", (e) => {
       const event = JSON.parse((e as MessageEvent).data) as {
@@ -175,46 +181,48 @@ function useLogStream(url: Ref<string>, loadMoreUrl?: Ref<string>) {
 
   watch(urlWithParams, () => connect(), { immediate: true });
 
-  const isLoadingMore = ref(false);
+  async function loadOlderLogs(entry: LoadMoreLogEntry) {
+    if (!(messages.value[0] instanceof LoadMoreLogEntry)) throw new Error("No loadMoreLogEntry on first item");
+    if (!container) throw new Error("No container");
 
-  async function loadOlderLogs() {
-    if (!loadMoreUrl) return;
-    if (isLoadingMore.value) return;
-
-    const to = messages.value[0].date;
-    const lastSeenId = messages.value[0].id;
+    const [loader, ...existingLogs] = messages.value;
+    const to = existingLogs[0].date;
+    const lastSeenId = existingLogs[0].id;
     const last = messages.value[Math.min(messages.value.length - 1, 300)].date;
     const delta = to.getTime() - last.getTime();
     const from = new Date(to.getTime() + delta);
-
-    const abortController = new AbortController();
-    const signal = abortController.signal;
-    isLoadingMore.value = true;
     try {
-      const urlWithMoreParams = computed(() => {
-        const loadMoreParams = new URLSearchParams(params.value);
-        loadMoreParams.append("from", from.toISOString());
-        loadMoreParams.append("to", to.toISOString());
-        loadMoreParams.append("minimum", "100");
-        loadMoreParams.append("lastSeenId", String(lastSeenId));
-
-        return withBase(`${loadMoreUrl.value}?${loadMoreParams.toString()}`);
+      loadingMore.value = true;
+      const { logs: newLogs, signal } = await loadBetween(container, params, from, to, {
+        min: 100,
+        lastSeenId,
       });
-      const stopWatcher = watchOnce(urlWithMoreParams, () => abortController.abort("stream changed"));
-      const logs = await (await fetch(urlWithMoreParams.value, { signal })).text();
-      stopWatcher();
-
-      if (logs && signal.aborted === false) {
-        const newMessages = logs
-          .trim()
-          .split("\n")
-          .map((line) => parseMessage(line));
-        messages.value = [...newMessages, ...messages.value];
+      if (newLogs && signal.aborted === false) {
+        messages.value = [loader, ...newLogs, ...existingLogs];
       }
-    } catch (e) {
-      console.error("Error loading older logs", e);
+    } catch (error) {
+      console.error(error);
     } finally {
-      isLoadingMore.value = false;
+      loadingMore.value = false;
+    }
+  }
+
+  async function loadSkippedLogs(entry: SkippedLogsEntry) {
+    if (!container) throw new Error("No container");
+
+    const from = entry.firstSkipped.date;
+    const to = entry.lastSkippedLog.date;
+    const lastSeenId = entry.lastSkippedLog.id;
+    try {
+      loadingMore.value = true;
+      const { logs, signal } = await loadBetween(container, params, from, to, { lastSeenId });
+      if (logs && signal.aborted === false) {
+        messages.value = messages.value.slice(logs.length).flatMap((log) => (log === entry ? logs : [log]));
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      loadingMore.value = false;
     }
   }
 
@@ -228,12 +236,49 @@ function useLogStream(url: Ref<string>, loadMoreUrl?: Ref<string>) {
 
   return {
     messages,
-    loadOlderLogs,
-    isLoadingMore,
-    hasComplexLogs,
     opened,
     error,
     loading,
-    eventSourceURL: urlWithParams,
+  };
+}
+
+export async function loadBetween(
+  container: Ref<Container>,
+  params: Ref<URLSearchParams>,
+  from: Date,
+  to: Date,
+  { lastSeenId, min, maxStart }: { lastSeenId?: number; min?: number; maxStart?: number } = {},
+) {
+  const url = computed(() => `/api/hosts/${container.value.host}/containers/${container.value.id}/logs`);
+  const abortController = new AbortController();
+  const signal = abortController.signal;
+
+  const urlWithMoreParams = computed(() => {
+    const loadMoreParams = new URLSearchParams(params.value);
+    loadMoreParams.append("from", from.toISOString());
+    loadMoreParams.append("to", to.toISOString());
+    if (min) {
+      loadMoreParams.append("min", String(min));
+    }
+    if (maxStart) {
+      loadMoreParams.append("maxStart", String(maxStart));
+    }
+    if (lastSeenId) {
+      loadMoreParams.append("lastSeenId", String(lastSeenId));
+    }
+    return withBase(`${url.value}?${loadMoreParams.toString()}`);
+  });
+  const stopWatcher = watchOnce(urlWithMoreParams, () => abortController.abort("stream changed"));
+  const logs = await (await fetch(urlWithMoreParams.value, { signal })).text();
+  stopWatcher();
+
+  if (!logs) return { logs: [], signal };
+
+  return {
+    logs: logs
+      .trim()
+      .split("\n")
+      .map((line) => parseMessage(line)),
+    signal,
   };
 }

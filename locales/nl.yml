@@ -9,6 +9,13 @@ toolbar:
   restart: Herstarten
   show-hostname: Toon hostnaam
   show-container-name: Toon containernaam
+  shell: Shell
+  attach: Koppelen
+action:
+  copy-log: Log kopiëren
+  copy-link: Permalink kopiëren
+  see-in-context: Bekijk in context
+  show-details: Toon details
 label:
   containers: Containers
   container: Geen containers | 1 container | {count} containers
@@ -32,6 +39,7 @@ label:
   group-menu: Aangepaste groepen
   no-logs: Container heeft nog geen logbestanden
   show-all-containers: Toon alle containers
+  collapse-all: Alles inklappen
 tooltip:
   search: Zoek containers (⌘ + k, ⌃k)
   pin-column: Vastzetten als kolom
@@ -41,7 +49,7 @@ tooltip:
 error:
   page-not-found: Deze pagina bestaat niet
   invalid-auth: Gebruikersnaam of wachtwoord is ongeldig
-  logs-skipped: \{total} items overgeslagen
+  logs-skipped: Toon {total} verborgen items
   container-not-found: Container niet gevonden
   events-stream:
     title: Onverwachte fout
@@ -75,6 +83,8 @@ placeholder:
   search-containers: Zoek containers (⌘ + k, ⌃k)
   search: Zoeken
 settings:
+  help-support: >
+    Steun Dozzle door te doneren of door ons te sponsoren op GitHub. Jouw bijdrage helpt ons om Dozzle verder te verbeteren voor iedereen. Hartelijk dank! 🙏🏼
   display: Weergave
   locale: Taal aanpassen
   small-scrollbars: Kleinere scrollbalk gebruiken
@@ -87,7 +97,7 @@ settings:
   show-stopped-containers: Gestopte containers tonen
   about: Over
   search: Doorzoeken inschakelen via Dozzle
-  using-version: Je gebruikt Dozzle {version}.
+  using-version: Je gebruikt <a href="https://dozzle.dev/" target="_blank" rel="noreferrer noopener">Dozzle</a> {version}.
   update-available: >-
     Er is een nieuwe versie beschikbaar! Update naar <a href="{href}" target="_blank" rel="noreferrer noopener">{nextVersion}</a>.
   show-std: Toon stdout- en stderr-labels

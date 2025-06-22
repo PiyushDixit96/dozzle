@@ -9,6 +9,13 @@ toolbar:
   restart: 重新啟動
   show-hostname: 顯示主機名稱
   show-container-name: 顯示容器名稱
+  shell: 終端機
+  attach: 附加
+action:
+  copy-log: 複製日誌
+  copy-link: 複製永久連結
+  see-in-context: 在內容中查看
+  show-details: 顯示詳細資訊
 label:
   containers: 容器
   container: 無容器 | 1 個容器 | {count} 個容器
@@ -18,6 +25,7 @@ label:
   all-containers: 所有容器
   no-logs: 容器尚無日誌
   show-all-containers: 顯示所有容器
+  collapse-all: 摺疊全部
   host: 主機
   hosts: 主機
   password: 密碼
@@ -41,7 +49,7 @@ tooltip:
 error:
   page-not-found: 此頁面不存在
   invalid-auth: 使用者名稱或密碼不正確
-  logs-skipped: 已略過 {total} 筆記錄
+  logs-skipped: 顯示 {total} 個隱藏項目
   container-not-found: 找不到容器
   events-stream:
     title: 意外錯誤
@@ -76,6 +84,8 @@ placeholder:
   search-containers: 搜尋容器 (⌘ + k, ⌃k)
   search: 搜尋
 settings:
+  help-support: >
+    請透過在 GitHub 上捐款或贊助我們來支持 Dozzle。您的貢獻幫助我們為所有人改進 Dozzle。謝謝！ 🙏🏼
   display: 顯示
   locale: 變更語言
   small-scrollbars: 使用較小的捲軸
@@ -88,7 +98,7 @@ settings:
   show-stopped-containers: 顯示已停止的容器
   about: 關於
   search: 啟用 Dozzle 搜尋功能
-  using-version: 您目前使用的是 Dozzle {version}。
+  using-version: 您目前使用的是 <a href="https://dozzle.dev/" target="_blank" rel="noreferrer noopener">Dozzle</a> {version}。
   update-available: >-
     有新版本可用！請更新至 <a href="{href}" target="_blank"
     rel="noreferrer noopener">{nextVersion}</a>。

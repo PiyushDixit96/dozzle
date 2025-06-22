@@ -1,12 +1,16 @@
 <template>
-  <div class="dropdown dropdown-end dropdown-hover">
+  <div class="dropdown dropdown-end dropdown-hover z-20">
     <label tabindex="0" class="btn btn-ghost btn-sm gap-0.5 px-2">
       <carbon:circle-solid class="text-red w-2.5" v-if="streamConfig.stderr" />
       <carbon:circle-solid class="text-blue w-2.5" v-if="streamConfig.stdout" />
     </label>
-    <ul tabindex="0" class="menu dropdown-content rounded-box bg-base-200 z-50 w-52 p-1 shadow-sm">
+    <ul
+      tabindex="0"
+      class="menu dropdown-content rounded-box bg-base-200 border-base-content/20 z-50 w-52 border p-1 shadow-sm"
+      @click="hideMenu"
+    >
       <li>
-        <a @click.prevent="clear()">
+        <a @click="clear()">
           <octicon:trash-24 /> {{ $t("toolbar.clear") }}
           <KeyShortcut char="k" :modifiers="['shift', 'meta']" />
         </a>
@@ -15,7 +19,7 @@
         <a :href="downloadUrl" download> <octicon:download-24 /> {{ $t("toolbar.download") }} </a>
       </li>
       <li>
-        <a @click.prevent="showSearch = true">
+        <a @click="showSearch = true">
           <mdi:magnify /> {{ $t("toolbar.search") }}
           <KeyShortcut char="f" />
         </a>
@@ -100,6 +104,16 @@ const downloadUrl = computed(() =>
     `/api/containers/${containers.value.map((c) => c.host + "~" + c.id).join(",")}/download?${new URLSearchParams(downloadParams.value).toString()}`,
   ),
 );
+
+const hideMenu = (e: MouseEvent) => {
+  if (e.target instanceof HTMLAnchorElement) {
+    setTimeout(() => {
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+    }, 50);
+  }
+};
 </script>
 
 <style scoped>

@@ -9,6 +9,13 @@ toolbar:
   restart: Reiniciar
   show-hostname: Mostrar nome do host
   show-container-name: Mostrar nome do container
+  shell: Shell
+  attach: Anexar
+action:
+  copy-log: Copiar log
+  copy-link: Copiar permalink
+  see-in-context: Ver no contexto
+  show-details: Mostrar detalhes
 label:
   containers: Contêineres
   container: Nenhum container | 1 container | {count} containers
@@ -32,6 +39,7 @@ label:
   group-menu: Grupos Personalizados
   no-logs: O container ainda não tem logs
   show-all-containers: Mostrar todos os containers
+  collapse-all: Recolher tudo
 tooltip:
   search: Pesquisar containers (⌘ + k, ⌃k)
   pin-column: Fixar como coluna
@@ -41,7 +49,7 @@ tooltip:
 error:
   page-not-found: Esta página não existe
   invalid-auth: Usuário ou senha inválidos
-  logs-skipped: \{total} entradas ignoradas
+  logs-skipped: Mostrar {total} entradas ocultas
   container-not-found: Container não encontrado
   events-stream:
     title: Erro Inesperado
@@ -74,6 +82,8 @@ placeholder:
   search-containers: Pesquisar containers (⌘ + k, ⌃k)
   search: Pesquisar
 settings:
+  help-support: >
+    Por favor, apoie o Dozzle doando ou nos patrocinando no GitHub. Suas contribuições nos ajudam a melhorar o Dozzle para todos. Obrigado! 🙏🏼
   display: Exibição
   locale: Sobrescrever idioma
   small-scrollbars: Usar barras de rolagem menores
@@ -86,7 +96,7 @@ settings:
   show-stopped-containers: Mostrar containers parados
   about: Sobre
   search: Habilitar pesquisa com Dozzle usando
-  using-version: Você está usando Dozzle {version}.
+  using-version: Você está usando <a href="https://dozzle.dev/" target="_blank" rel="noreferrer noopener">Dozzle</a> {version}.
   update-available: >-
     Nova versão disponível! Atualize para <a href="{href}" target="_blank" rel="noreferrer noopener">{nextVersion}</a>.
   show-std: Mostrar rótulos stdout e stderr

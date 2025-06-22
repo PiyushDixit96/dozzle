@@ -1,5 +1,4 @@
 <template>
-  <InfiniteLoader :onLoadMore="fetchMore" :enabled="!loadingMore && messages.length > 10" />
   <ul class="flex animate-pulse flex-col gap-4 p-4" v-if="loading || (noLogs && waitingForMoreLog)">
     <div class="flex flex-row gap-2" v-for="size in sizes">
       <div class="bg-base-content/50 h-3 w-40 shrink-0 rounded-full opacity-50"></div>
@@ -11,19 +10,22 @@
     {{ $t("label.no-logs") }}
   </div>
   <slot :messages="messages" v-else></slot>
-  <IndeterminateBar :color />
+  <IndeterminateBar :color v-if="!historical" />
 </template>
 
 <script lang="ts" setup generic="T">
 import { LogStreamSource } from "@/composable/eventStreams";
+const route = useRoute();
 
 const { entity, streamSource } = $defineProps<{
   streamSource: (t: Ref<T>) => LogStreamSource;
   entity: T;
 }>();
 
-const { messages, loadOlderLogs, isLoadingMore, opened, loading, error, eventSourceURL } = streamSource($$(entity));
-const { loadingMore } = useLoggingContext();
+const { historical } = useLoggingContext();
+
+const { messages, opened, loading, error } = streamSource(toRef(() => entity));
+
 const color = computed(() => {
   if (error.value) return "error";
   if (loading.value) return "secondary";
@@ -39,33 +41,36 @@ defineExpose({
   clear: () => (messages.value = []),
 });
 
-const fetchMore = async () => {
-  if (!isLoadingMore.value) {
-    loadingMore.value = true;
-    await loadOlderLogs();
-    loadingMore.value = false;
-  }
-};
+if (historical.value && route.query.logId) {
+  watchOnce(messages, async () => {
+    await nextTick();
+    document.getElementById(route.query.logId as string)?.scrollIntoView({ behavior: "instant", block: "center" });
+  });
+}
 
-const sizes = computedWithControl(eventSourceURL, () => {
-  const sizeOptions = [
-    "w-2/12",
-    "w-3/12",
-    "w-4/12",
-    "w-5/12",
-    "w-6/12",
-    "w-7/12",
-    "w-8/12",
-    "w-9/12",
-    "w-10/12",
-    "w-11/12",
-    "w-full",
-  ];
-  const result = [];
-  const iterations = 18;
-  for (let i = 0; i < iterations; i++) {
-    result.push(sizeOptions[Math.floor(Math.random() * sizeOptions.length)]);
-  }
-  return result;
-});
+const sizes = ref<string[]>([]);
+watch(
+  opened,
+  (value) => {
+    if (value) return;
+    const sizeOptions = [
+      "w-2/12",
+      "w-3/12",
+      "w-4/12",
+      "w-5/12",
+      "w-6/12",
+      "w-7/12",
+      "w-8/12",
+      "w-9/12",
+      "w-10/12",
+      "w-11/12",
+      "w-full",
+    ];
+    sizes.value = Array.from({ length: 18 }, () => sizeOptions[Math.floor(Math.random() * sizeOptions.length)]);
+  },
+  {
+    flush: "sync",
+    immediate: true,
+  },
+);
 </script>

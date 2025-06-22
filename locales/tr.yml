@@ -9,6 +9,13 @@ toolbar:
   restart: Yeniden Başlat
   show-hostname: Sunucu adını göster
   show-container-name: Konteyner adını göster
+  shell: Kabuk
+  attach: Bağla
+action:
+  copy-log: Günlüğü kopyala
+  copy-link: Kalıcı bağlantıyı kopyala
+  see-in-context: Bağlamda gör
+  show-details: Detayları göster
 label:
   containers: Konteynerlar
   container: Konteyner yok | 1 konteyner | {count} konteyner
@@ -38,6 +45,7 @@ label:
   group-menu: Özel Gruplar
   no-logs: Konteyner henüz log içermiyor
   show-all-containers: Tüm konteynerleri göster
+  collapse-all: Hepsini daralt
 tooltip:
   search: Konteynerlerde ara (⌘ + k, ⌃k)
   pin-column: Sütun olarak sabitle
@@ -47,7 +55,7 @@ tooltip:
 error:
   page-not-found: Bu sayfa bulunamadı
   invalid-auth: Kullanıcı adı veya şifre geçersiz
-  logs-skipped: "{total} giriş atlanıldı"
+  logs-skipped: "{total} gizli girişi göster"
   container-not-found: Konteyner bulunamadı
   events-stream:
     title: Beklenmeyen Hata
@@ -83,6 +91,8 @@ placeholder:
   search-containers: Konteynerlerde ara (⌘ + k, ⌃k)
   search: Ara
 settings:
+  help-support: >
+    Lütfen GitHub'da bağış yaparak veya bizi sponsor olarak destekleyerek Dozzle'ı destekleyin. Katkılarınız Dozzle'ı herkes için geliştirmemize yardımcı oluyor. Teşekkürler! 🙏🏼
   display: Görünüm
   locale: Dili geçersiz kıl
   small-scrollbars: Daha küçük kaydırma çubukları kullan
@@ -95,7 +105,7 @@ settings:
   show-stopped-containers: Durdurulan konteynerleri göster
   about: Hakkında
   search: Dozzle kullanarak aramayı etkinleştir
-  using-version: Dozzle {version} kullanıyorsunuz.
+  using-version: <a href="https://dozzle.dev/" target="_blank" rel="noreferrer noopener">Dozzle</a> {version} kullanıyorsunuz.
   update-available: >-
     Yeni sürüm mevcut! <a href="{href}" target="_blank"
     rel="noreferrer noopener">{nextVersion}</a> sürümüne güncelleyin.

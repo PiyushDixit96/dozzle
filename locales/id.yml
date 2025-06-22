@@ -9,6 +9,13 @@ toolbar:
   restart: Mulai ulang
   show-hostname: Tampilkan nama host
   show-container-name: Tampilkan nama kontainer
+  shell: Shell
+  attach: Lampirkan
+action:
+  copy-log: Salin log
+  copy-link: Salin permalink
+  see-in-context: Lihat dalam konteks
+  show-details: Tampilkan detail
 
 label:
   containers: Kontainer
@@ -33,6 +40,7 @@ label:
   group-menu: Grup Kustom
   no-logs: Kontainer belum memiliki log
   show-all-containers: Tampilkan semua kontainer
+  collapse-all: Tutup semua
 
 tooltip:
   search: Cari kontainer (⌘ + k, ⌃k)
@@ -44,7 +52,7 @@ tooltip:
 error:
   page-not-found: Halaman ini tidak ada
   invalid-auth: Nama pengguna atau kata sandi tidak valid
-  logs-skipped: Melewati {total} entri
+  logs-skipped: Tampilkan {total} entri tersembunyi
   container-not-found: Kontainer tidak ditemukan
   events-stream:
     title: Kesalahan Tak Terduga
@@ -82,6 +90,8 @@ placeholder:
   search: Cari
 
 settings:
+  help-support: >
+    Silakan dukung Dozzle dengan berdonasi atau mensponsori kami di GitHub. Kontribusi Anda membantu kami meningkatkan Dozzle untuk semua orang. Terima kasih! 🙏🏼
   display: Tampilan
   locale: Ganti bahasa
   small-scrollbars: Gunakan scrollbar kecil
@@ -94,7 +104,7 @@ settings:
   show-stopped-containers: Tampilkan kontainer yang dihentikan
   about: Tentang
   search: Aktifkan pencarian dengan Dozzle menggunakan
-  using-version: Anda menggunakan Dozzle {version}.
+  using-version: Anda menggunakan <a href="https://dozzle.dev/" target="_blank" rel="noreferrer noopener">Dozzle</a> {version}.
   update-available: >-
     Versi baru tersedia! Perbarui ke <a href="{href}" target="_blank" rel="noreferrer noopener">{nextVersion}</a>.
   show-std: Tampilkan label stdout dan stderr

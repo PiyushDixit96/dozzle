@@ -9,6 +9,13 @@ toolbar:
   restart: Перезапустить
   show-hostname: Показать имя хоста
   show-container-name: Показать имя контейнера
+  shell: Оболочка
+  attach: Подключить
+action:
+  copy-log: Копировать лог
+  copy-link: Копировать постоянную ссылку
+  see-in-context: Посмотреть в контексте
+  show-details: Показать детали
 label:
   containers: Контейнеры
   container: Нет контейнеров | 1 контейнер | {count} контейнеров
@@ -32,6 +39,7 @@ label:
   group-menu: Пользовательские Группы
   no-logs: У контейнера еще нет логов
   show-all-containers: Показать все контейнеры
+  collapse-all: Свернуть все
 tooltip:
   search: Поиск контейнеров (⌘ + k, ⌃k)
   pin-column: Закрепить столбец
@@ -41,7 +49,7 @@ tooltip:
 error:
   page-not-found: Эта страница не доступна.
   invalid-auth: Имя пользователя или пароль неверны.
-  logs-skipped: Пропущено {total} записей
+  logs-skipped: Показать {total} скрытых записей
   container-not-found: Контейнер не найден.
   events-stream:
     title: Неожиданная ошибка
@@ -74,6 +82,8 @@ placeholder:
   search-containers: Поиск контейнеров (⌘ + k, ⌃k)
   search: Поиск
 settings:
+  help-support: >
+    Пожалуйста, поддержите Dozzle, сделав пожертвование или спонсорство на GitHub. Ваши вклады помогают нам улучшать Dozzle для всех. Спасибо! 🙏🏼
   display: Вид
   locale: Язык
   small-scrollbars: Уменьшенная полоса прокрутки
@@ -86,7 +96,7 @@ settings:
   show-stopped-containers: Показывать остановленные контейнеры
   about: Информация
   search: Включить поиск с помощью Dozzle, используя
-  using-version: Вы используете версию Dozzle {version}.
+  using-version: Вы используете <a href="https://dozzle.dev/" target="_blank" rel="noreferrer noopener">Dozzle</a> {version}.
   update-available: >-
     Доступна новая версия! Обновить до <a href="{href}" target="_blank" rel="noreferrer noopener">{nextVersion}</a>.
   show-std: Показывать метки stdout и stderr

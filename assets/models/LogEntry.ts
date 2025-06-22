@@ -4,6 +4,7 @@ import ComplexLogItem from "@/components/LogViewer/ComplexLogItem.vue";
 import SimpleLogItem from "@/components/LogViewer/SimpleLogItem.vue";
 import ContainerEventLogItem from "@/components/LogViewer/ContainerEventLogItem.vue";
 import SkippedEntriesLogItem from "@/components/LogViewer/SkippedEntriesLogItem.vue";
+import LoadMoreLogItem from "@/components/LogViewer/LoadMoreLogItem.vue";
 
 export type JSONValue = string | number | boolean | JSONObject | Array<JSONValue>;
 export type JSONObject = { [x: string]: JSONValue };
@@ -148,7 +149,7 @@ export class ContainerEventLogEntry extends LogEntry<string> {
 }
 
 export class SkippedLogsEntry extends LogEntry<string> {
-  private _totalSkipped = 0;
+  private _totalSkipped = ref(0);
   private lastSkipped: LogEntry<string | JSONObject>;
 
   constructor(
@@ -156,9 +157,10 @@ export class SkippedLogsEntry extends LogEntry<string> {
     totalSkipped: number,
     public readonly firstSkipped: LogEntry<string | JSONObject>,
     lastSkipped: LogEntry<string | JSONObject>,
+    private readonly loader: (i: SkippedLogsEntry) => Promise<void>,
   ) {
     super("", "", date.getTime(), date, "stderr", "info");
-    this._totalSkipped = totalSkipped;
+    this._totalSkipped.value = totalSkipped;
     this.lastSkipped = lastSkipped;
   }
   getComponent(): Component {
@@ -166,20 +168,42 @@ export class SkippedLogsEntry extends LogEntry<string> {
   }
 
   public get message(): string {
-    return `Skipped ${this.totalSkipped} entries`;
+    return `Skipped ${this._totalSkipped.value} entries`;
   }
 
   public addSkippedEntries(totalSkipped: number, lastItem: LogEntry<string | JSONObject>) {
-    this._totalSkipped += totalSkipped;
+    this._totalSkipped.value += totalSkipped;
     this.lastSkipped = lastItem;
   }
 
-  public get totalSkipped(): number {
-    return this._totalSkipped;
+  public get lastSkippedLog(): LogEntry<string | JSONObject> {
+    return this.lastSkipped;
   }
 
-  public get lastSkippedItem(): LogEntry<string | JSONObject> {
-    return this.lastSkipped;
+  public async loadSkippedEntries(): Promise<void> {
+    await this.loader(this);
+  }
+
+  public get totalSkipped(): number {
+    return unref(this._totalSkipped);
+  }
+}
+
+export class LoadMoreLogEntry extends LogEntry<string> {
+  constructor(
+    date: Date,
+    private readonly loader: (i: LoadMoreLogEntry) => Promise<void>,
+    public readonly rememberScrollPosition: boolean = true,
+  ) {
+    super("", "", date.getTime(), date, "stderr", "info");
+  }
+
+  getComponent(): Component {
+    return LoadMoreLogItem;
+  }
+
+  async loadMore(): Promise<void> {
+    await this.loader(this);
   }
 }
 

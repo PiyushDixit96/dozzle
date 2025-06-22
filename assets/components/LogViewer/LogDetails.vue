@@ -1,6 +1,6 @@
 <template>
   <header class="flex items-center gap-4">
-    <Tag :data-level="entry.level" class="text-white uppercase" v-if="entry.level">{{ entry.level }}</Tag>
+    <Tag :data-level="entry.level" class="show-unknown text-white uppercase" v-if="entry.level">{{ entry.level }}</Tag>
     <h1 class="text-lg max-md:hidden">
       <DateTime :date="entry.date" />
     </h1>
@@ -32,7 +32,7 @@
         <UseClipboard v-slot="{ copy, copied }" :source="entry.rawMessage">
           <button class="swap outline-hidden" @click="copy()" :class="{ 'hover:swap-active': copied }">
             <mdi:check class="swap-on" />
-            <mdi:content-copy class="swap-off" />
+            <material-symbols:content-copy class="swap-off" />
           </button>
         </UseClipboard>
       </div>
