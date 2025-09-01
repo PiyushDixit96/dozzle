@@ -22,7 +22,7 @@ COPY public ./public
 # Build assets
 RUN pnpm build
 
-FROM --platform=$BUILDPLATFORM golang:1.24-alpine AS builder
+FROM --platform=$BUILDPLATFORM golang:1.25-alpine AS builder
 
 # install gRPC dependencies
 RUN apk add --no-cache ca-certificates protoc protobuf-dev\
@@ -54,7 +54,7 @@ ARG TARGETOS TARGETARCH
 RUN go generate
 
 # Build binary
-RUN GOOS=$TARGETOS GOARCH=$TARGETARCH CGO_ENABLED=0 go build -ldflags "-s -w -X github.com/amir20/dozzle/internal/support/cli.Version=$TAG" -o dozzle
+RUN GOEXPERIMENT=jsonv2 GOOS=$TARGETOS GOARCH=$TARGETARCH CGO_ENABLED=0 go build -ldflags "-s -w -X github.com/amir20/dozzle/internal/support/cli.Version=$TAG" -o dozzle
 
 RUN mkdir /data
 

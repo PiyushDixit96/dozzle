@@ -11,7 +11,7 @@ jobs:
     name: Typecheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-node@v4
         name: Install Node
         with:
@@ -31,7 +31,7 @@ jobs:
     name: JavaScript Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-node@v4
         name: Install Node
         with:
@@ -54,10 +54,10 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.24.4"
+          go-version: "1.25.0"
           check-latest: true
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Install Protoc
         uses: arduino/setup-protoc@v3
         with:
@@ -73,16 +73,16 @@ jobs:
     name: Go Staticcheck
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.24.4"
+          go-version: "1.25.0"
           check-latest: true
       - name: Generate dependencies
         run: make fake_assets shared_key.pem shared_cert.pem
       - name: Stactic checker
-        uses: dominikh/staticcheck-action@v1.3.1
+        uses: dominikh/staticcheck-action@v1.4.0
         with:
           install-go: false
   int-test:
@@ -90,7 +90,7 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-node@v4
         name: Install Node
         with:
