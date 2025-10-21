@@ -28,6 +28,7 @@ users:
     # Generate with docker run -it --rm amir20/dozzle generate --name Admin --email me@email.net --password secret admin
     password: $2a$11$9ho4vY2LdJ/WBopFcsAS0uORC0x2vuFHQgT/yBqZyzclhHsoaIkzK
     filter:
+    roles:
 ```
 
 Dozzle uses `email` to generate avatars using [Gravatar](https://gravatar.com/). It is optional. The password is hashed using `bcrypt` which can be generated using `docker run amir20/dozzle generate`.
@@ -139,15 +140,44 @@ In this example, the `admin` user has no filter, so they can see all containers.
 > [!NOTE]
 > Filters can also be set [globally](/guide/filters) with the `--filter` flag. This flag is applied to all users. If a user has a filter set, it will override the global filter.
 
+### Setting specific roles for users
+
+Dozzle allows assigning roles to users. Roles define what actions a user can perform on containers. Roles are configured in the users.yml file.
+
+```yaml
+users:
+  admin:
+    email:
+    name: Admin
+    password: $2a$11$9ho4vY2LdJ/WBopFcsAS0uORC0x2vuFHQgT/yBqZyzclhHsoaIkzK
+    roles:
+
+  guest:
+    email:
+    name: Guest
+    password: $2a$11$9ho4vY2LdJ/WBopFcsAS0uORC0x2vuFHQgT/yBqZyzclhHsoaIkzK
+    roles: shell
+```
+
+In this example, the `admin` user has no roles specified, so they have full access to all container actions. The `guest` user has the shell role, meaning they can only open a shell in the containers. Roles make it easy to control and restrict what users can do in Dozzle.
+
+Dozzle supports the following roles:
+
+- **shell** - allows attach and exec in the container
+- **actions** - allows performing container actions (start, stop, restart)
+- **download** - allows downloading container logs
+- **none** - denies all actions
+- **all** - allows all actions (default)
+
 ## Generating users.yml
 
 Dozzle has a built-in `generate` command to generate `users.yml`. Here is an example:
 
 ```sh
-docker run -it --rm amir20/dozzle generate admin --password password --email test@email.net --name "John Doe" --user-filter name=foo > users.yml
+docker run -it --rm amir20/dozzle generate admin --password password --email test@email.net --name "John Doe" --user-filter name=foo --user-roles shell > users.yml
 ```
 
-In this example, `admin` is the username. Email and name are optional but recommended to display accurate avatars. `docker run -it --rm amir20/dozzle generate --help` displays all options. The `--user-filter` flag is a comma-separated list of filters.
+In this example, `admin` is the username. Email and name are optional but recommended to display accurate avatars. `docker run -it --rm amir20/dozzle generate --help` displays all options. The `--user-filter` flag is a comma-separated list of filters. The `--user-roles` flag is a comma-separated list of roles.
 
 ## Forward Proxy
 
@@ -179,10 +209,20 @@ In this mode, Dozzle expects the following headers:
 - `Remote-Email` to map to the user's email address. This email is also used to find the right [Gravatar](https://gravatar.com/) for the user.
 - `Remote-Name` to be a display name like `John Doe`
 - `Remote-Filter` to be a comma-separated list of filters allowed for user.
+- `Remote-Roles` to be a comma-separated list of roles allowed for user.
+
+Additionally, you can configure a logout URL with:
+
+```yaml
+DOZZLE_AUTH_LOGOUT_URL: http://oauth2.example.ru/oauth2/sign_out
+```
 
 ### Setting up Dozzle with Authelia
 
 [Authelia](https://www.authelia.com/) is an open-source authentication and authorization server and portal fulfilling the identity and access management. While setting up Authelia is out of scope for this section, the configuration can be shared as an example for setting up Dozzle with Authelia.
+
+<details>
+<summary>➡️ Click to expand Authelia example</summary>
 
 ::: code-group
 
@@ -318,6 +358,8 @@ notifier:
 
 Valid SSL keys are required because Authelia only supports SSL.
 
+</details>
+
 ### Setting up Dozzle with Cloudflare Zero Trust
 
 Cloudflare Zero Trust is a service for authenticated access to self-hosted software. This section defines how Dozzle can be set up to use Cloudflare Zero Trust for authentication.
@@ -341,3 +383,86 @@ services:
 ```
 
 After running the Dozzle container, configure the Application in Cloudflare Zero Trust dashboard by following the [guide](https://developers.cloudflare.com/cloudflare-one/applications/configure-apps/self-hosted-apps/).
+
+### Setting up Dozzle with Pocket ID
+
+You must first setup a container to pass OpenID Connect authentication through your reverse proxy.
+
+Below is an example using [oauth2-proxy](https://github.com/oauth2-proxy/oauth2-proxy).
+
+<details>
+<summary>➡️ Click to expand oauth2-proxy example</summary>
+
+1. Create a new OIDC client in Pocket ID for Dozzle:
+   - **Name:** `Dozzle`
+   - **Callback URLs:** `https://dozzle.example.com/oauth2/callback`
+   - **PKCE:** `Enabled`
+
+   Copy the **Client ID** and **Client Secret** values for use later.
+
+2. Add the following to your existing Dozzle compose:
+
+   ```yml
+   environment:
+     DOZZLE_AUTH_PROVIDER: forward-proxy
+     DOZZLE_AUTH_HEADER_USER: X-Forwarded-User
+     DOZZLE_AUTH_HEADER_EMAIL: X-Forwarded-Email
+     DOZZLE_AUTH_HEADER_NAME: X-Forwarded-Preferred-Username
+   ```
+
+   Comment out the Dozzle ports, as we will redirect these through the new authentication container.
+
+   This method should not require any changes to your reverse proxy configuration.
+
+   ```yml
+   # ports:
+   #   - 8080:8080
+   ```
+
+3. Add a new oauth2-proxy container service to your existing Dozzle compose:
+
+   ```yml
+   services:
+     # ...
+     oauth2-proxy:
+       image: quay.io/oauth2-proxy/oauth2-proxy:latest
+       restart: unless-stopped
+       container_name: dozzle-oidc
+       command: --config /oauth2-proxy.cfg
+       volumes:
+         - "./oauth2-proxy.cfg:/oauth2-proxy.cfg"
+       ports:
+         - 8080:4180
+   ```
+
+4. Create the oauth2-proxy config file.
+
+   In the directory beside your compose file, create `oauth2-proxy.cfg` :
+
+   ```toml
+    client_id = "xxx"                            # from Pocket ID
+    client_secret = "xxx"                        # from Pocket ID
+    cookie_secret = "xxx"                        # generate with openssl rand -base64 32 | tr -- '+/' '-_'
+    upstreams = "http://dozzle:8080"             # upstream to Dozzle containers internal port
+    code_challenge_method = "S256"               # PKCE challenges plain or S256
+    cookie_expire = "0"                          # seconds, 0 for session
+    cookie_name = "__Host-oauth2-proxy"          # or __Secure-oauth2-proxy (less secure)
+    cookie_secure = true                         # uses the secure HTTPS cookie
+    email_domains = ["*"]                        # allows any email domain to authenticate
+    http_address = "0.0.0.0:4180"                # port oauth2-proxy listens on
+    oidc_issuer_url = "https://id.example.com"   # your Pocket base URL
+    provider_display_name = "Pocket ID"          # display name for OIDC login
+    provider = "oidc"                            # use OpenID connect
+    reverse_proxy = true                         # reverse proxy the traffic
+    scope = "openid email profile groups"        # passthru these OIDC scopes
+   ```
+
+   Fill in the variables per the comments.
+
+5. Finally - restart your Docker compose stack.
+
+   Your reverse proxy should now authenticate you to Dozzle via oauth2-proxy.
+
+   Check logs for troubleshooting.
+
+</details>
